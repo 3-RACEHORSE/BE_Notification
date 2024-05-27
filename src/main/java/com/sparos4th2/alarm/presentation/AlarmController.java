@@ -1,5 +1,7 @@
 package com.sparos4th2.alarm.presentation;
 
+import com.sparos4th2.alarm.application.AlarmService;
+import com.sparos4th2.alarm.application.AlarmServiceImpl;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import reactor.core.publisher.Sinks;
 public class AlarmController {
 
 	private final Sinks.Many<String> sink;
+	private final AlarmService alarmService;
 
 	public AlarmController() {
 		this.sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -26,7 +29,7 @@ public class AlarmController {
 
 	@GetMapping(path = "/notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<String> streamNotifications(@RequestHeader String uuid) {
-		return sink.asFlux().map(data -> "data: " + data + "\n\n");
+		return alarmService.getAlarm(uuid).map(data -> "data: " + data + "\n\n");
 	}
 
 	// 예시로 매 5초마다 이벤트를 생성하는 메서드
