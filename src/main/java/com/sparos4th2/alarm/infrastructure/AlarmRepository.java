@@ -7,10 +7,8 @@ import org.springframework.data.mongodb.repository.Tailable;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
-@Repository
 public interface AlarmRepository extends ReactiveMongoRepository<Alarm, String> {
-
-	@Tailable
-	@Query("{ 'receiver_uuid' : ?0 }")
-	Flux<Alarm> findByReceiverUuid(String receiverUuid);
+	
+	@Query("{ 'receiverUuid' : ?0 }")
+	Flux<Alarm> findAlarmByReceiverUuid(String receiverUuid);
 }
