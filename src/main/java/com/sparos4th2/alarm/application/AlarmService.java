@@ -14,5 +14,5 @@ public interface AlarmService {
 
 	Flux<Alarm> getAlarm(String receiverUuid);
 
-	Flux<Alarm> streamAlarms(String receiverUuid);
+	Flux<ServerSentEvent<Object>> connect(String receiverUuid);
 }

@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,25 +35,18 @@ public class AlarmController {
 
 	@GetMapping(value = "/notifications")
 	public Flux<Alarm> Notifications(@RequestHeader String uuid) {
-		log.info("receiverUuid: {}", uuid);
 		return alarmService.getAlarm(uuid);
 	}
 
 	//이벤트를 생성하는 메서드
 	@GetMapping(value = "/send-notification")
 	public void sendNotification() {
-		log.info("sendNotification");
 		alarmService.saveAlarm();
 	}
 
 	@GetMapping(value = "stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<Alarm> streamNotifications(@RequestHeader String uuid) {
+	public Flux<ServerSentEvent<Object>> streamNotifications(@RequestHeader String uuid) {
 		log.info("receiverUuid: {}", uuid);
-		return alarmService.streamAlarms(uuid);
-	}
-
-	@PostMapping
-	public void sendChat() {
-		alarmService.saveAlarm();
+		return alarmService.connect(uuid);
 	}
 }
