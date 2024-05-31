@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AlarmRequestDto {
+public class AlarmDto {
 
 	private String receiverUuid;
 	private String message;
