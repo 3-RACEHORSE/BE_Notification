@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AlarmController {
 
 	private final AlarmService alarmService;
 
+	//알림 조회
 	@GetMapping(value = "/notifications")
 	public Flux<Alarm> Notifications(@RequestHeader String uuid) {
 		return alarmService.getAlarm(uuid);
@@ -33,9 +35,21 @@ public class AlarmController {
 		alarmService.saveAlarm();
 	}
 
+	//알림 SSE연결요청
 	@GetMapping(value = "stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<ServerSentEvent<Object>> streamNotifications(@RequestHeader String uuid) {
 		log.info("receiverUuid: {}", uuid);
 		return alarmService.connect(uuid);
+	}
+
+	//SSE연결 확인용
+	@GetMapping(value = "/success-connect")
+	public Mono<Boolean> sseSuccessConnect(@RequestHeader String uuid) {
+		return alarmService.successMessageSend(uuid);
+	}
+
+	@GetMapping(value = "/finish")
+	public void finish(@RequestHeader String uuid) {
+		alarmService.finish(uuid);
 	}
 }
