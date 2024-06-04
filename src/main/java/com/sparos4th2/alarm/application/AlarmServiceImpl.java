@@ -1,13 +1,16 @@
 package com.sparos4th2.alarm.application;
 
 import com.sparos4th2.alarm.domain.Alarm;
+import com.sparos4th2.alarm.dto.AlarmDto;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,14 +60,55 @@ public class AlarmServiceImpl implements AlarmService {
 		//SSE 연결이 되어있지 않은 경우
 		Sinks.Many<ServerSentEvent<Object>> sink = Sinks.many().multicast().onBackpressureBuffer();
 		sinks.put(receiverUuid, sink);
+
+		//30분 후에 연결이 끊어지도록 설정
+		Mono.delay(Duration.ofMinutes(30)).doOnNext(i -> finish(receiverUuid))
+			.subscribe();
 		return sink.asFlux().doOnCancel(() -> {
 			log.info("### SSE Notification Cancelled by client: " + receiverUuid);
-			this.finish(receiverUuid);
+			finish(receiverUuid);
 		});
 	}
 
+	@Override
+	public Mono<Boolean> successMessageSend(String receiverUuid) {
+		return Mono.just(receiverUuid)
+			.flatMap(id -> {
+				if (sinks.containsKey(receiverUuid)) {      //알림을 받을 사용자가 현재 SSE로 연결한 경우 알림 발송
+					sinks.get(receiverUuid).tryEmitNext(ServerSentEvent.builder()
+						.event("config")
+						.data("Connected Successfully")
+						.comment("Connected Successfully")
+						.build());
+					return Mono.just(true);
+				}
+				//오류처리CustomException으로 해야됨
+				return Mono.error(new RuntimeException("Not connected"));
+			});
+	}
+
+	@Override
 	public void finish(String receiverUuid) {
 		sinks.get(receiverUuid).tryEmitComplete();
 		sinks.remove(receiverUuid);
+	}
+
+	@KafkaListener(topics = "kafka-json-test", groupId = "alarm-consumer")
+	public void consume(AlarmDto alarmDto) {
+		System.out.println(String.format("Consumed message -> %s", alarmDto));
+		Alarm alarm = Alarm.builder()
+			.receiverUuid(alarmDto.getReceiverUuid())
+			.message(alarmDto.getMessage())
+			.eventType(alarmDto.getEventType())
+			.alarmTime(LocalDateTime.now())
+			.build();
+		log.info("alarm: {}", alarm.toString());
+		alarmRepository.save(alarm).subscribe();
+		if (sinks.containsKey(alarm.getReceiverUuid())) {
+			sinks.get(alarm.getReceiverUuid())
+				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+					.comment("new alarm")
+					.build());
+		}
 	}
 }
