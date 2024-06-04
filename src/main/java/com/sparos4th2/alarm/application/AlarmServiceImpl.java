@@ -1,5 +1,7 @@
 package com.sparos4th2.alarm.application;
 
+import com.sparos4th2.alarm.common.exception.CustomException;
+import com.sparos4th2.alarm.common.exception.ResponseStatus;
 import com.sparos4th2.alarm.domain.Alarm;
 import com.sparos4th2.alarm.dto.AlarmDto;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
@@ -45,8 +47,8 @@ public class AlarmServiceImpl implements AlarmService {
 
 	@Override
 	public Flux<Alarm> getAlarm(String receiverUuid) {
-		return alarmRepository
-			.findAlarmByReceiverUuid(receiverUuid)
+		return alarmRepository.findAlarmByReceiverUuid(receiverUuid)
+			.switchIfEmpty(Mono.error(new CustomException(ResponseStatus.NO_EXIST_ALARM)))
 			.take(10)
 			.subscribeOn(Schedulers.boundedElastic());
 	}
