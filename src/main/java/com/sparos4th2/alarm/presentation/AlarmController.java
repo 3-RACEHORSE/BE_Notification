@@ -38,4 +38,6 @@ public class AlarmController {
 		log.info("receiverUuid: {}", uuid);
 		return alarmService.connect(uuid);
 	}
+
+
 }
