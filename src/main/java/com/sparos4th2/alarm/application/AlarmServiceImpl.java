@@ -1,6 +1,7 @@
 package com.sparos4th2.alarm.application;
 
 import com.sparos4th2.alarm.domain.Alarm;
+import com.sparos4th2.alarm.dto.AlarmDto;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -89,5 +91,24 @@ public class AlarmServiceImpl implements AlarmService {
 	public void finish(String receiverUuid) {
 		sinks.get(receiverUuid).tryEmitComplete();
 		sinks.remove(receiverUuid);
+	}
+
+	@KafkaListener(topics = "kafka-json-test", groupId = "alarm-consumer")
+	public void consume(AlarmDto alarmDto) {
+		System.out.println(String.format("Consumed message -> %s", alarmDto));
+		Alarm alarm = Alarm.builder()
+			.receiverUuid(alarmDto.getReceiverUuid())
+			.message(alarmDto.getMessage())
+			.eventType(alarmDto.getEventType())
+			.alarmTime(LocalDateTime.now())
+			.build();
+		log.info("alarm: {}", alarm.toString());
+		alarmRepository.save(alarm).subscribe();
+		if (sinks.containsKey(alarm.getReceiverUuid())) {
+			sinks.get(alarm.getReceiverUuid())
+				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+					.comment("new alarm")
+					.build());
+		}
 	}
 }
