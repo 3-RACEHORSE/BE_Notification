@@ -21,14 +21,44 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+	set('springCloudVersion', "2022.0.5")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+jar {
+	enabled = false
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.kafka:spring-kafka'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// eureka
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	// spring cloud config
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	// spring cloud bus
+	implementation 'org.springframework.cloud:spring-cloud-starter-bus-kafka'
+	// logback
+	implementation 'net.logstash.logback:logstash-logback-encoder:6.2'
+	implementation 'com.github.danielwegener:logback-kafka-appender:0.1.0'
+	// Logstash
+	implementation 'net.logstash.logback:logstash-logback-encoder:6.2'
+}
+
+tasks.named('bootBuildImage') {
+	builder = 'paketobuildpacks/builder-jammy-base:latest'
 }
 
 tasks.named('test') {

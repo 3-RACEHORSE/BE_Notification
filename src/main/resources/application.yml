@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: notification-service
+  profiles:
+    active: none
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL}
+
+  cloud:
+    config:
+      profile: ${PROFILE}
+
+encrypt:
+  key: ${ENCRYPT_KEY}
