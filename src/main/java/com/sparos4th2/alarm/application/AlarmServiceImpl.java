@@ -102,20 +102,23 @@ public class AlarmServiceImpl implements AlarmService {
 
 	@KafkaListener(topics = "kafka-json-test", groupId = "alarm-consumer")
 	public void consume(AlarmDto alarmDto) {
-		System.out.println(String.format("Consumed message -> %s", alarmDto));
-		Alarm alarm = Alarm.builder()
-			.receiverUuid(alarmDto.getReceiverUuid())
-			.message(alarmDto.getMessage())
-			.eventType(alarmDto.getEventType())
-			.alarmTime(LocalDateTime.now())
-			.build();
-		log.info("alarm: {}", alarm.toString());
-		alarmRepository.save(alarm).subscribe();
-		if (sinks.containsKey(alarm.getReceiverUuid())) {
-			sinks.get(alarm.getReceiverUuid())
-				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
-					.comment("new alarm")
-					.build());
+		System.out.println(String.format("Consumed message -> %s", alarmDto.getMessage()));
+		for (String receiverUuid : alarmDto.getReceiverUuids()) {
+			Alarm alarm = Alarm.builder()
+				.receiverUuid(receiverUuid)
+				.message(alarmDto.getMessage())
+				.eventType(alarmDto.getEventType())
+				.alarmTime(LocalDateTime.now())
+				.build();
+			log.info("alarm: {}", alarm.toString());
+			alarmRepository.save(alarm).subscribe();
+			if (sinks.containsKey(alarm.getReceiverUuid())) {
+				sinks.get(alarm.getReceiverUuid())
+					.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+						.comment("new alarm")
+						.build());
+			}
 		}
+
 	}
 }
