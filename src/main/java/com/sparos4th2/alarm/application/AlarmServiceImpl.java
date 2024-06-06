@@ -109,6 +109,8 @@ public class AlarmServiceImpl implements AlarmService {
 				.message(alarmDto.getMessage())
 				.eventType(alarmDto.getEventType())
 				.alarmTime(LocalDateTime.now())
+				//todo: alarmUrl DTO로 들어온 값을 변형에서 저장하거나 DTO자체를 저장
+				.alarmUrl(alarmDto.getAlarmUrl())
 				.build();
 			log.info("alarm: {}", alarm.toString());
 			alarmRepository.save(alarm).subscribe();
