@@ -15,4 +15,5 @@ public class AlarmDto {
 	private List<String> receiverUuids;
 	private String message;
 	private String eventType;
+	private String alarmUrl;
 }
