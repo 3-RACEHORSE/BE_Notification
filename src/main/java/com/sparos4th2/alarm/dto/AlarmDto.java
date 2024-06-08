@@ -1,5 +1,6 @@
 package com.sparos4th2.alarm.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AlarmDto {
 
-	private String receiverUuid;
+	private List<String> receiverUuids;
 	private String message;
 	private String eventType;
+	private String alarmUrl;
 }
