@@ -13,7 +13,7 @@ public interface AlarmService {
 
 	Flux<ServerSentEvent<Object>> connect(String receiverUuid);
 
-	Mono<Boolean> successMessageSend(String receiverUuid);
+//	Mono<Boolean> successMessageSend(String receiverUuid);
 
 	void finish(String receiverUuid);
 }

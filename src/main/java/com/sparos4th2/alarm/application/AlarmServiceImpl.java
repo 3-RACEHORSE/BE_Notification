@@ -62,6 +62,11 @@ public class AlarmServiceImpl implements AlarmService {
 		//SSE 연결이 되어있지 않은 경우
 		Sinks.Many<ServerSentEvent<Object>> sink = Sinks.many().multicast().onBackpressureBuffer();
 		sinks.put(receiverUuid, sink);
+		sinks.get(receiverUuid).tryEmitNext(ServerSentEvent.builder()
+			.event("config")
+			.data("Connected Successfully")
+			.comment("Connected Successfully")
+			.build());
 
 		//30분 후에 연결이 끊어지도록 설정
 		Mono.delay(Duration.ofMinutes(30)).doOnNext(i -> finish(receiverUuid))
@@ -72,22 +77,22 @@ public class AlarmServiceImpl implements AlarmService {
 		});
 	}
 
-	@Override
-	public Mono<Boolean> successMessageSend(String receiverUuid) {
-		return Mono.just(receiverUuid)
-			.flatMap(id -> {
-				if (sinks.containsKey(receiverUuid)) {      //알림을 받을 사용자가 현재 SSE로 연결한 경우 알림 발송
-					sinks.get(receiverUuid).tryEmitNext(ServerSentEvent.builder()
-						.event("config")
-						.data("Connected Successfully")
-						.comment("Connected Successfully")
-						.build());
-					return Mono.just(true);
-				}
-				//오류처리CustomException으로 해야됨
-				return Mono.error(new RuntimeException("Not connected"));
-			});
-	}
+//	@Override
+//	public Mono<Boolean> successMessageSend(String receiverUuid) {
+//		return Mono.just(receiverUuid)
+//			.flatMap(id -> {
+//				if (sinks.containsKey(receiverUuid)) {      //알림을 받을 사용자가 현재 SSE로 연결한 경우 알림 발송
+//					sinks.get(receiverUuid).tryEmitNext(ServerSentEvent.builder()
+//						.event("config")
+//						.data("Connected Successfully")
+//						.comment("Connected Successfully")
+//						.build());
+//					return Mono.just(true);
+//				}
+//				//오류처리CustomException으로 해야됨
+//				return Mono.error(new RuntimeException("Not connected"));
+//			});
+//	}
 
 	@Override
 	public void finish(String receiverUuid) {
@@ -97,20 +102,25 @@ public class AlarmServiceImpl implements AlarmService {
 
 	@KafkaListener(topics = "kafka-json-test", groupId = "alarm-consumer")
 	public void consume(AlarmDto alarmDto) {
-		System.out.println(String.format("Consumed message -> %s", alarmDto));
-		Alarm alarm = Alarm.builder()
-			.receiverUuid(alarmDto.getReceiverUuid())
-			.message(alarmDto.getMessage())
-			.eventType(alarmDto.getEventType())
-			.alarmTime(LocalDateTime.now())
-			.build();
-		log.info("alarm: {}", alarm.toString());
-		alarmRepository.save(alarm).subscribe();
-		if (sinks.containsKey(alarm.getReceiverUuid())) {
-			sinks.get(alarm.getReceiverUuid())
-				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
-					.comment("new alarm")
-					.build());
+		System.out.println(String.format("Consumed message -> %s", alarmDto.getMessage()));
+		for (String receiverUuid : alarmDto.getReceiverUuids()) {
+			Alarm alarm = Alarm.builder()
+				.receiverUuid(receiverUuid)
+				.message(alarmDto.getMessage())
+				.eventType(alarmDto.getEventType())
+				.alarmTime(LocalDateTime.now())
+				//todo: alarmUrl DTO로 들어온 값을 변형에서 저장하거나 DTO자체를 저장
+				.alarmUrl(alarmDto.getAlarmUrl())
+				.build();
+			log.info("alarm: {}", alarm.toString());
+			alarmRepository.save(alarm).subscribe();
+			if (sinks.containsKey(alarm.getReceiverUuid())) {
+				sinks.get(alarm.getReceiverUuid())
+					.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+						.comment("new alarm")
+						.build());
+			}
 		}
+
 	}
 }
