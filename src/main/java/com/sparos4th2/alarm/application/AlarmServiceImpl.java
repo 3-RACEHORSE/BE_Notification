@@ -100,9 +100,10 @@ public class AlarmServiceImpl implements AlarmService {
 		sinks.remove(receiverUuid);
 	}
 
-	@KafkaListener(topics = "kafka-json-test", groupId = "alarm-consumer")
+	@KafkaListener(topics = "alarm-topic", groupId = "alarm-consumer")
 	public void consume(AlarmDto alarmDto) {
-		System.out.println(String.format("Consumed message -> %s", alarmDto.getMessage()));
+		log.info("Receiver UUIDs -> %s", alarmDto.getReceiverUuids());
+		log.info("Consumed message -> %s", alarmDto.getMessage());
 		for (String receiverUuid : alarmDto.getReceiverUuids()) {
 			Alarm alarm = Alarm.builder()
 				.receiverUuid(receiverUuid)
@@ -110,7 +111,6 @@ public class AlarmServiceImpl implements AlarmService {
 				.eventType(alarmDto.getEventType())
 				.alarmTime(LocalDateTime.now())
 				//todo: alarmUrl DTO로 들어온 값을 변형에서 저장하거나 DTO자체를 저장
-				.alarmUrl(alarmDto.getAlarmUrl())
 				.build();
 			log.info("alarm: {}", alarm.toString());
 			alarmRepository.save(alarm).subscribe();
