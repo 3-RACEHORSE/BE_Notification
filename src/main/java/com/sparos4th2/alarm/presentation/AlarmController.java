@@ -42,12 +42,6 @@ public class AlarmController {
 		return alarmService.connect(uuid);
 	}
 
-	//SSE연결 확인용
-//	@GetMapping(value = "/success-connect")
-//	public Mono<Boolean> sseSuccessConnect(@RequestHeader String uuid) {
-//		return alarmService.successMessageSend(uuid);
-//	}
-
 	@GetMapping(value = "/finish")
 	public void finish(@RequestHeader String uuid) {
 		alarmService.finish(uuid);
