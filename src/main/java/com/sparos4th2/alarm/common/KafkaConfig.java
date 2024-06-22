@@ -45,7 +45,7 @@ public class KafkaConfig {
 	public ConsumerFactory<String, AlarmDto> consumerFactory() {
 		Map<String, Object> props = new HashMap<>();
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-		props.put(ConsumerConfig.GROUP_ID_CONFIG, "alarm-consumer");
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, "alarm-topic");
 		return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(),
 			new JsonDeserializer<>(AlarmDto.class, false));
 	}
