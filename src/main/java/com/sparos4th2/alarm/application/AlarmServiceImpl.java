@@ -5,9 +5,11 @@ import com.sparos4th2.alarm.common.exception.ResponseStatus;
 import com.sparos4th2.alarm.domain.Alarm;
 import com.sparos4th2.alarm.dto.AlarmDto;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
+import com.sparos4th2.alarm.vo.AlarmVo;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,27 +102,36 @@ public class AlarmServiceImpl implements AlarmService {
 		sinks.remove(receiverUuid);
 	}
 
-	@KafkaListener(topics = "alarm-topic", groupId = "alarm-consumer")
 	public void consume(AlarmDto alarmDto) {
 		log.info("Receiver UUIDs -> %s", alarmDto.getReceiverUuids());
 		log.info("Consumed message -> %s", alarmDto.getMessage());
-		for (String receiverUuid : alarmDto.getReceiverUuids()) {
+
+		List<String> receiverUuids = alarmDto.getReceiverUuids();
+
+		receiverUuids.stream().map(receiverUuid -> {
 			Alarm alarm = Alarm.builder()
 				.receiverUuid(receiverUuid)
 				.message(alarmDto.getMessage())
 				.eventType(alarmDto.getEventType())
 				.alarmTime(LocalDateTime.now())
-				//todo: alarmUrl DTO로 들어온 값을 변형에서 저장하거나 DTO자체를 저장
+				.build();
+
+			AlarmVo alarmVo = AlarmVo.builder()
+				.receiverUuid(receiverUuid)
+				.message(alarmDto.getMessage())
+				.eventType(alarmDto.getEventType())
+				.alarmTime(LocalDateTime.now())
 				.build();
 			log.info("alarm: {}", alarm.toString());
 			alarmRepository.save(alarm).subscribe();
-			if (sinks.containsKey(alarm.getReceiverUuid())) {
+
+			if (sinks.containsKey(receiverUuid)) {
 				sinks.get(alarm.getReceiverUuid())
-					.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+					.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarmVo)
 						.comment("new alarm")
 						.build());
 			}
-		}
-
+			return null;
+		});
 	}
 }
