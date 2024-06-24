@@ -103,12 +103,12 @@ public class AlarmServiceImpl implements AlarmService {
 	}
 
 	public void consume(AlarmDto alarmDto) {
-		log.info("Receiver UUIDs -> %s", alarmDto.getReceiverUuids());
-		log.info("Consumed message -> %s", alarmDto.getMessage());
+		log.info("Receiver UUIDs -> {}", alarmDto.getReceiverUuids());
+		log.info("Consumed message -> {}", alarmDto.getMessage());
 
 		List<String> receiverUuids = alarmDto.getReceiverUuids();
 
-		receiverUuids.stream().map(receiverUuid -> {
+		receiverUuids.forEach(receiverUuid -> {
 			Alarm alarm = Alarm.builder()
 				.receiverUuid(receiverUuid)
 				.message(alarmDto.getMessage())
@@ -122,16 +122,16 @@ public class AlarmServiceImpl implements AlarmService {
 				.eventType(alarmDto.getEventType())
 				.alarmTime(LocalDateTime.now())
 				.build();
+
 			log.info("alarm: {}", alarm.toString());
 			alarmRepository.save(alarm).subscribe();
 
-			if (sinks.containsKey(receiverUuid)) {
+			if (sinks.containsKey(alarm.getReceiverUuid())) {
 				sinks.get(alarm.getReceiverUuid())
 					.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarmVo)
 						.comment("new alarm")
 						.build());
 			}
-			return null;
 		});
 	}
 }
