@@ -1,4 +1,4 @@
-package com.sparos4th2.alarm.dto;
+package com.sparos4th2.alarm.data.dto;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

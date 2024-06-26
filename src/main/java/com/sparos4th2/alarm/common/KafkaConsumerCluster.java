@@ -1,8 +1,8 @@
 package com.sparos4th2.alarm.common;
 
 import com.sparos4th2.alarm.application.AlarmService;
-import com.sparos4th2.alarm.dto.AlarmDto;
-import java.math.BigDecimal;
+import com.sparos4th2.alarm.data.dto.AlarmDto;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

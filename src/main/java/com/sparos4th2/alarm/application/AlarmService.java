@@ -1,20 +1,16 @@
 package com.sparos4th2.alarm.application;
 
+import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.domain.Alarm;
-import com.sparos4th2.alarm.dto.AlarmDto;
+import com.sparos4th2.alarm.data.dto.AlarmDto;
 import org.springframework.http.codec.ServerSentEvent;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public interface AlarmService {
 
 	void saveAlarm();
 
-	Flux<Alarm> getAlarm(String receiverUuid);
-
-	Flux<ServerSentEvent<Object>> connect(String receiverUuid);
-
-//	Mono<Boolean> successMessageSend(String receiverUuid);
+	NotificationResponseVo getAlarm(String receiverUuid, Integer page, Integer size);
 
 	void finish(String receiverUuid);
 
