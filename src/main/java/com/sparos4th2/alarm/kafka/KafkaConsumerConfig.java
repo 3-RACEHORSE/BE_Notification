@@ -1,6 +1,5 @@
-package com.sparos4th2.alarm.common;
+package com.sparos4th2.alarm.kafka;
 
-import com.sparos4th2.alarm.dto.AlarmDto;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
