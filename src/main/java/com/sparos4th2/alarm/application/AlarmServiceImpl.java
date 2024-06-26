@@ -1,7 +1,5 @@
 package com.sparos4th2.alarm.application;
 
-import com.sparos4th2.alarm.common.exception.CustomException;
-import com.sparos4th2.alarm.common.exception.ResponseStatus;
 import com.sparos4th2.alarm.data.dto.NotificationDto;
 import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.domain.Alarm;
@@ -11,8 +9,6 @@ import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
-import com.sparos4th2.alarm.vo.AlarmVo;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -22,20 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
-import reactor.core.scheduler.Schedulers;
-
-import javax.management.Notification;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AlarmServiceImpl implements AlarmService {
 
-	private final AlarmReactiveRepository alarmReactiveRepository;
-	private final AlarmCountReactiveRepository alarmCountReactiveRepository;
 	private final AlarmCountRepository alarmCountRepository;
 	private final AlarmRepository alarmRepository;
 	private final Map<String, Sinks.Many<ServerSentEvent<Object>>> sinks = new HashMap<>();
@@ -46,21 +35,30 @@ public class AlarmServiceImpl implements AlarmService {
 			.receiverUuid("test")
 			.message("test")
 			.eventType("test")
+			.alarmUrl("testUrl")
 			.alarmTime(LocalDateTime.now())
 			.build();
 		log.info("alarm >>> {}", alarm.toString());
 		alarmRepository.save(alarm);
+
+		AlarmCount alarmCount = AlarmCount.builder()
+				.alarmCount(1)
+				.receiverUuid("test")
+				.build();
+		alarmCountRepository.save(alarmCount);
 	}
 
 	@Override
 	public NotificationResponseVo getAlarm(String receiverUuid, Integer page, Integer size) {
 		log.info("receiverUuid >>> {}, page >>> {}, size >>> {}", receiverUuid, page, size);
 
-		// AlarmCount 수를 0으로 전달
+		// AlarmCount 수를 0으로 갱신
 		AlarmCount alarmCount = AlarmCount.builder()
 				.receiverUuid(receiverUuid)
 				.alarmCount(0)
 				.build();
+
+		alarmCountRepository.save(alarmCount);
 
 		// 알람 리스트 최신순으로 반환
 		Page<Alarm> alarmPage = alarmRepository.findAllAlarm(
@@ -87,12 +85,6 @@ public class AlarmServiceImpl implements AlarmService {
 				.currentPage(page)
 				.hasNext(hasNext)
 				.build();
-	}
-
-	@Override
-	public void finish(String receiverUuid) {
-		sinks.get(receiverUuid).tryEmitComplete();
-		sinks.remove(receiverUuid);
 	}
 
 	public void consume(AlarmDto alarmDto) {

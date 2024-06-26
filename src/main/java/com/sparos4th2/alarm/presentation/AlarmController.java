@@ -43,16 +43,10 @@ public class AlarmController {
 	}
 
 	//알림 SSE연결요청
-	@GetMapping(value = "stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@GetMapping(value = "/stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	@Operation(summary = "미확인 알림 개수 SSE연결", description = "읽지않은 알림을 실시간으로 받습니다.")
 	public Flux<StreamNotificationResponseVo> streamNotifications(@RequestHeader String uuid) {
 		return alarmCountReactiveRepository.findByReceiverUuid(uuid)
 				.subscribeOn(Schedulers.boundedElastic());
-	}
-
-	@GetMapping(value = "/finish")
-	@Operation(summary = "알림 연결 종료", description = "알림을 연결을 종료합니다.")
-	public void finish(@RequestHeader String uuid) {
-		alarmService.finish(uuid);
 	}
 }

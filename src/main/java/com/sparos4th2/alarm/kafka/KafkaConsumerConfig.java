@@ -1,4 +1,4 @@
-package com.sparos4th2.alarm.common;
+package com.sparos4th2.alarm.kafka;
 
 import java.util.HashMap;
 import java.util.Map;

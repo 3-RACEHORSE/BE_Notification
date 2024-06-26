@@ -15,6 +15,4 @@ public interface AlarmCountReactiveRepository extends ReactiveMongoRepository<Al
 	@Query("{ 'receiverUuid' : ?0 }")
 	Flux<StreamNotificationResponseVo> findByReceiverUuid(String receiverUuid);
 
-	@Query("{ 'receiverUuid' : ?0 }")
-	Optional<Alarm> existsByReceiverUuid(String receiverUuid);
 }

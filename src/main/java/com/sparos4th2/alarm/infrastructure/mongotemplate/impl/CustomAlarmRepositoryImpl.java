@@ -23,7 +23,7 @@ public class CustomAlarmRepositoryImpl implements CustomAlarmRepository {
 
     @Override
     public Page<Alarm> findAllAlarm(String receiverUuid, Pageable pageable) {
-        Criteria criteria = new Criteria();
+        Criteria criteria = Criteria.where("receiverUuid").is(receiverUuid);
 
         // 수신자 일치, alarm 내림차순
         Query query = new Query(criteria).with(pageable)
