@@ -11,12 +11,15 @@ public class AlarmVo {
 	private String message;
 	private String eventType;
 	private LocalDateTime alarmTime;
+	private int alarmCount;
 
 	@Builder
-	public AlarmVo(String receiverUuid, String message, String eventType, LocalDateTime alarmTime) {
+	public AlarmVo(String receiverUuid, String message, String eventType, LocalDateTime alarmTime,
+		int alarmCount) {
 		this.receiverUuid = receiverUuid;
 		this.message = message;
 		this.eventType = eventType;
 		this.alarmTime = alarmTime;
+		this.alarmCount = alarmCount;
 	}
 }

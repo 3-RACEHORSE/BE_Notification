@@ -1,8 +1,8 @@
-package com.sparos4th2.alarm.common;
+package com.sparos4th2.alarm.kafka;
 
 import com.sparos4th2.alarm.application.AlarmService;
-import com.sparos4th2.alarm.dto.AlarmDto;
-import java.math.BigDecimal;
+import com.sparos4th2.alarm.data.dto.AlarmDto;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class KafkaConsumerCluster {
 
 	private final AlarmService alarmService;
 
-	@KafkaListener(topics = "alarm-topic", groupId = "alarm")
+	@KafkaListener(topics = Topics.Constant.ALARM, groupId = "alarm")
 	public void consumeBidder(@Payload LinkedHashMap<String, Object> message,
 		@Headers MessageHeaders messageHeaders) {
 		log.info("consumer: success >>> message: {}, headers: {}", message.toString(),
