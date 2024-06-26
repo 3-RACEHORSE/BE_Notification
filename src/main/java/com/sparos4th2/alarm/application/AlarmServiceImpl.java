@@ -3,7 +3,9 @@ package com.sparos4th2.alarm.application;
 import com.sparos4th2.alarm.common.exception.CustomException;
 import com.sparos4th2.alarm.common.exception.ResponseStatus;
 import com.sparos4th2.alarm.domain.Alarm;
+import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.dto.AlarmDto;
+import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
 import com.sparos4th2.alarm.vo.AlarmVo;
 import java.time.Duration;
@@ -27,6 +29,7 @@ import reactor.core.scheduler.Schedulers;
 public class AlarmServiceImpl implements AlarmService {
 
 	private final AlarmRepository alarmRepository;
+	private final AlarmCountRepository alarmCountRepository;
 	private final Map<String, Sinks.Many<ServerSentEvent<Object>>> sinks = new HashMap<>();
 
 	@Override
@@ -39,9 +42,18 @@ public class AlarmServiceImpl implements AlarmService {
 			.build();
 		log.info("alarm: {}", alarm.toString());
 		alarmRepository.save(alarm).subscribe();
+
+		AlarmVo alarmVo = AlarmVo.builder()
+			.receiverUuid("test")
+			.message("test")
+			.eventType("test")
+			.alarmTime(LocalDateTime.now())
+			.alarmCount(alarmCountRepository.findByReceiverUuid("test").getAlarmCount())
+			.build();
+
 		if (sinks.containsKey(alarm.getReceiverUuid())) {
 			sinks.get(alarm.getReceiverUuid())
-				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarm)
+				.tryEmitNext(ServerSentEvent.builder().event("alarm").data(alarmVo)
 					.comment("new alarm")
 					.build());
 		}
@@ -49,6 +61,16 @@ public class AlarmServiceImpl implements AlarmService {
 
 	@Override
 	public Flux<Alarm> getAlarm(String receiverUuid) {
+
+		alarmCountRepository.findByReceiverUuid(receiverUuid)
+			.switchIfEmpty(Mono.error(new CustomException(ResponseStatus.NO_EXIST_ALARM_COUNT)))
+			.subscribe();
+
+		alarmCountRepository.save(AlarmCount.builder()
+			.receiverUuid(receiverUuid)
+			.alarmCount(0)
+			.build()).subscribe();
+
 		return alarmRepository.findAlarmByReceiverUuid(receiverUuid)
 			.switchIfEmpty(Mono.error(new CustomException(ResponseStatus.NO_EXIST_ALARM)))
 			.take(10)
@@ -116,11 +138,28 @@ public class AlarmServiceImpl implements AlarmService {
 				.alarmTime(LocalDateTime.now())
 				.build();
 
+			if (alarmCountRepository.existsByReceiverUuid(receiverUuid).isPresent()) {
+				AlarmCount alarmCount = alarmCountRepository.findByReceiverUuid(receiverUuid);
+				AlarmCount alarmCount1 = AlarmCount.builder()
+					.receiverUuid(receiverUuid)
+					.alarmCount(alarmCount.getAlarmCount() + 1)
+					.build();
+				alarmCountRepository.save(alarmCount1).subscribe();
+			}
+			else {
+				AlarmCount alarmCount = AlarmCount.builder()
+					.receiverUuid(receiverUuid)
+					.alarmCount(1)
+					.build();
+				alarmCountRepository.save(alarmCount).subscribe();
+			}
+
 			AlarmVo alarmVo = AlarmVo.builder()
 				.receiverUuid(receiverUuid)
 				.message(alarmDto.getMessage())
 				.eventType(alarmDto.getEventType())
 				.alarmTime(LocalDateTime.now())
+				.alarmCount(alarmCountRepository.findByReceiverUuid(receiverUuid).getAlarmCount())
 				.build();
 
 			log.info("alarm: {}", alarm.toString());
