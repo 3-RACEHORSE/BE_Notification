@@ -54,7 +54,7 @@ public class AlarmServiceImpl implements AlarmService {
 		alarmCountRepository.save(alarmCount);
 
 		// 알람 리스트 최신순으로 10개 반환
-		List<Alarm> alarms = alarmRepository.findTop10ByReceiverUuidOrderByAlarmTimeDesc(receiverUuid);
+		List<Alarm> alarms = alarmRepository.findAllByReceiverUuidOrderByAlarmTimeDesc(receiverUuid);
 		List<NotificationDto> notificationDtos = new ArrayList<>();
 
 		for (Alarm alarm : alarms) {
