@@ -15,12 +15,15 @@ public class NotificationDto {
     private String eventType;
     private String uuid;
     private LocalDateTime alarmTime;
+    private String id;
 
     @Builder
-    public NotificationDto(String message, String eventType, String uuid, LocalDateTime alarmTime) {
+    public NotificationDto(String message, String eventType,
+                           String uuid, LocalDateTime alarmTime, String id) {
         this.message = message;
         this.eventType = eventType;
         this.uuid = uuid;
         this.alarmTime = alarmTime;
+        this.id = id;
     }
 }
