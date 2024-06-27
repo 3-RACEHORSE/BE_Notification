@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 public class NotificationDto {
     private String message;
     private String eventType;
-    private String alarmUrl;
+    private String uuid;
     private LocalDateTime alarmTime;
 
     @Builder
-    public NotificationDto(String message, String eventType, String alarmUrl, LocalDateTime alarmTime) {
+    public NotificationDto(String message, String eventType, String uuid, LocalDateTime alarmTime) {
         this.message = message;
         this.eventType = eventType;
-        this.alarmUrl = alarmUrl;
+        this.uuid = uuid;
         this.alarmTime = alarmTime;
     }
 }
