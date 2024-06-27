@@ -87,7 +87,7 @@ jobs:
           sudo docker rm notification-service     
 
       - name: Run new docker container
-        run: sudo docker run -d --restart unless-stopped --name notification-service -p 9005:9005 --net cheonma-network ${{ secrets.DOCKERHUB_USERNAME }}/notification-service:latest
+        run: sudo docker run -d --name notification-service -p 9005:9005 --net cheonma-network ${{ secrets.DOCKERHUB_USERNAME }}/notification-service:latest
 
       - name: Delete old docker image
         run: sudo docker system prune -f
