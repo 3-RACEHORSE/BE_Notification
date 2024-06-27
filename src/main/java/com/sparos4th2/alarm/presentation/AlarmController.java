@@ -4,7 +4,9 @@ import com.sparos4th2.alarm.application.AlarmService;
 import com.sparos4th2.alarm.common.SuccessResponse;
 import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.data.vo.StreamNotificationResponseVo;
+import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
+import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +26,14 @@ public class AlarmController {
 
 	private final AlarmService alarmService;
 	private final AlarmCountReactiveRepository alarmCountReactiveRepository;
+	private final AlarmCountRepository alarmCountRepository;
 
 	//알림 조회
 	@GetMapping(value = "/notifications")
 	@Operation(summary = "알림 조회", description = "알림을 조회합니다.")
 	public SuccessResponse<NotificationResponseVo> Notifications(
-			@RequestHeader String uuid,
-			@RequestParam(required = false, defaultValue = "0") Integer page,
-			@RequestParam(required = false, defaultValue = "10") Integer size) {
-		return new SuccessResponse<>(alarmService.getAlarm(uuid, page, size));
+			@RequestHeader String uuid) {
+		return new SuccessResponse<>(alarmService.getAlarm(uuid));
 	}
 
 	//이벤트를 생성하는 메서드
@@ -46,6 +47,9 @@ public class AlarmController {
 	@GetMapping(value = "/stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	@Operation(summary = "미확인 알림 개수 SSE연결", description = "읽지않은 알림을 실시간으로 받습니다.")
 	public Flux<StreamNotificationResponseVo> streamNotifications(@RequestHeader String uuid) {
+		if(alarmCountRepository.findAllByReceiverUuid(uuid).isEmpty()) {
+			alarmCountRepository.save(AlarmCount.builder().alarmCount(0).receiverUuid(uuid).build());
+		}
 		return alarmCountReactiveRepository.findByReceiverUuid(uuid)
 				.subscribeOn(Schedulers.boundedElastic());
 	}

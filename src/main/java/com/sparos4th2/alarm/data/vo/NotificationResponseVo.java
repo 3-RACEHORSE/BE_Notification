@@ -14,14 +14,9 @@ import java.util.List;
 @ToString
 public class NotificationResponseVo {
     private List<NotificationDto> notificationDtoList;
-    private int currentPage;
-    private boolean hasNext;
-
 
     @Builder
-    public NotificationResponseVo(List<NotificationDto> notificationDtoList, int currentPage, boolean hasNext) {
+    public NotificationResponseVo(List<NotificationDto> notificationDtoList) {
         this.notificationDtoList = notificationDtoList;
-        this.currentPage = currentPage;
-        this.hasNext = hasNext;
     }
 }
