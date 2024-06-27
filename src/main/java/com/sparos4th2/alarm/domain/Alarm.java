@@ -17,15 +17,15 @@ public class Alarm {
 	private String receiverUuid;
 	private String message;
 	private String eventType;
-	private String alarmUrl;
+	private String uuid;
 	private LocalDateTime alarmTime;
 
 	@Builder
-	public Alarm(String receiverUuid, String message, String eventType, String alarmUrl, LocalDateTime alarmTime) {
+	public Alarm(String receiverUuid, String message, String eventType, String uuid, LocalDateTime alarmTime) {
 		this.receiverUuid = receiverUuid;
 		this.message = message;
 		this.eventType = eventType;
-		this.alarmUrl = alarmUrl;
+		this.uuid = uuid;
 		this.alarmTime = alarmTime;
 	}
 }
