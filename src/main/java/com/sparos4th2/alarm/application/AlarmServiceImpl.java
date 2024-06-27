@@ -75,6 +75,7 @@ public class AlarmServiceImpl implements AlarmService {
 	public void consume(AlarmDto alarmDto) {
 		log.info("Receiver UUIDs -> {}", alarmDto.getReceiverUuids());
 		log.info("Consumed message -> {}", alarmDto.getMessage());
+		log.info("Uuid -> {}", alarmDto.getUuid());
 
 		List<String> receiverUuids = alarmDto.getReceiverUuids();
 
@@ -83,6 +84,7 @@ public class AlarmServiceImpl implements AlarmService {
 				.receiverUuid(receiverUuid)
 				.message(alarmDto.getMessage())
 				.eventType(alarmDto.getEventType())
+				.uuid(alarmDto.getUuid())
 				.alarmTime(LocalDateTime.now())
 				.build();
 
