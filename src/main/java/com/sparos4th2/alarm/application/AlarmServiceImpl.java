@@ -5,20 +5,14 @@ import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.domain.Alarm;
 import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.data.dto.AlarmDto;
-import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
-import com.sparos4th2.alarm.infrastructure.AlarmReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Sinks;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +21,6 @@ public class AlarmServiceImpl implements AlarmService {
 
 	private final AlarmCountRepository alarmCountRepository;
 	private final AlarmRepository alarmRepository;
-	private final Map<String, Sinks.Many<ServerSentEvent<Object>>> sinks = new HashMap<>();
 
 	@Override
 	public void saveAlarm() {
@@ -49,8 +42,8 @@ public class AlarmServiceImpl implements AlarmService {
 	}
 
 	@Override
-	public NotificationResponseVo getAlarm(String receiverUuid, Integer page, Integer size) {
-		log.info("receiverUuid >>> {}, page >>> {}, size >>> {}", receiverUuid, page, size);
+	public NotificationResponseVo getAlarm(String receiverUuid) {
+		log.info("receiverUuid >>> {}", receiverUuid);
 
 		// AlarmCount 수를 0으로 갱신
 		AlarmCount alarmCount = AlarmCount.builder()
@@ -60,13 +53,8 @@ public class AlarmServiceImpl implements AlarmService {
 
 		alarmCountRepository.save(alarmCount);
 
-		// 알람 리스트 최신순으로 반환
-		Page<Alarm> alarmPage = alarmRepository.findAllAlarm(
-				receiverUuid, PageRequest.of(page, size)
-		);
-
-		List<Alarm> alarms = alarmPage.getContent();
-
+		// 알람 리스트 최신순으로 10개 반환
+		List<Alarm> alarms = alarmRepository.findTop10ByReceiverUuidOrderByAlarmTimeDesc(receiverUuid);
 		List<NotificationDto> notificationDtos = new ArrayList<>();
 
 		for (Alarm alarm : alarms) {
@@ -78,12 +66,8 @@ public class AlarmServiceImpl implements AlarmService {
 					.build());
 		}
 
-		boolean hasNext = alarmPage.hasNext();
-
 		return NotificationResponseVo.builder()
 				.notificationDtoList(notificationDtos)
-				.currentPage(page)
-				.hasNext(hasNext)
 				.build();
 	}
 
