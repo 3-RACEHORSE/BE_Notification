@@ -5,20 +5,14 @@ import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.domain.Alarm;
 import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.data.dto.AlarmDto;
-import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
-import com.sparos4th2.alarm.infrastructure.AlarmReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Sinks;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +21,6 @@ public class AlarmServiceImpl implements AlarmService {
 
 	private final AlarmCountRepository alarmCountRepository;
 	private final AlarmRepository alarmRepository;
-	private final Map<String, Sinks.Many<ServerSentEvent<Object>>> sinks = new HashMap<>();
 
 	@Override
 	public void saveAlarm() {
