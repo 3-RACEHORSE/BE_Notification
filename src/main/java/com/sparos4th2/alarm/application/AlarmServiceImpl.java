@@ -28,7 +28,7 @@ public class AlarmServiceImpl implements AlarmService {
 			.receiverUuid("test")
 			.message("test")
 			.eventType("test")
-			.alarmUrl("testUrl")
+			.uuid("uuid")
 			.alarmTime(LocalDateTime.now())
 			.build();
 		log.info("alarm >>> {}", alarm.toString());
@@ -61,7 +61,7 @@ public class AlarmServiceImpl implements AlarmService {
 			notificationDtos.add(NotificationDto.builder()
 					.message(alarm.getMessage())
 					.eventType(alarm.getEventType())
-					.alarmUrl(alarm.getAlarmUrl())
+					.uuid(alarm.getUuid())
 					.alarmTime(alarm.getAlarmTime())
 					.build());
 		}

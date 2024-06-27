@@ -31,6 +31,7 @@ public class KafkaConsumerCluster {
 			.receiverUuids((List<String>) message.get("receiverUuids"))
 			.message(message.get("message").toString())
 			.eventType(message.get("eventType").toString())
+			.uuid(message.get("uuid").toString())
 			.build();
 
 		log.info("consumer: success >>> alarmDto: {}", alarmDto.toString());
