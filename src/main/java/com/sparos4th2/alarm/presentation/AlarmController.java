@@ -7,6 +7,7 @@ import com.sparos4th2.alarm.data.vo.StreamNotificationResponseVo;
 import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
+import com.sparos4th2.alarm.infrastructure.AlarmRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class AlarmController {
 	private final AlarmService alarmService;
 	private final AlarmCountReactiveRepository alarmCountReactiveRepository;
 	private final AlarmCountRepository alarmCountRepository;
+	private final AlarmRepository alarmRepository;
 
 	//알림 조회
 	@GetMapping(value = "/notifications")
@@ -52,5 +54,14 @@ public class AlarmController {
 		}
 		return alarmCountReactiveRepository.findByReceiverUuid(uuid)
 				.subscribeOn(Schedulers.boundedElastic());
+	}
+
+	// 알림 삭제
+	@DeleteMapping(value = "/delete/{id}")
+	@Operation(summary = "알림 삭제 API", description = "알림 id를 통해 알림 완전 삭제")
+	public SuccessResponse<Object> deleteAlarm(
+			@PathVariable("id") String id) {
+		alarmRepository.deleteById(id);
+		return new SuccessResponse<>(null);
 	}
 }
