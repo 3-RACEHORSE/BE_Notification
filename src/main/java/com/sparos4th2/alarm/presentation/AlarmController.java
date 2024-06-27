@@ -29,10 +29,8 @@ public class AlarmController {
 	@GetMapping(value = "/notifications")
 	@Operation(summary = "알림 조회", description = "알림을 조회합니다.")
 	public SuccessResponse<NotificationResponseVo> Notifications(
-			@RequestHeader String uuid,
-			@RequestParam(required = false, defaultValue = "0") Integer page,
-			@RequestParam(required = false, defaultValue = "10") Integer size) {
-		return new SuccessResponse<>(alarmService.getAlarm(uuid, page, size));
+			@RequestHeader String uuid) {
+		return new SuccessResponse<>(alarmService.getAlarm(uuid));
 	}
 
 	//이벤트를 생성하는 메서드

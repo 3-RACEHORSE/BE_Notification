@@ -7,7 +7,7 @@ public interface AlarmService {
 
 	void saveAlarm();
 
-	NotificationResponseVo getAlarm(String receiverUuid, Integer page, Integer size);
+	NotificationResponseVo getAlarm(String receiverUuid);
 
 	void consume(AlarmDto alarmDto);
 }
