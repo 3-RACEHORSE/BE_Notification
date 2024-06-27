@@ -63,6 +63,7 @@ public class AlarmServiceImpl implements AlarmService {
 					.eventType(alarm.getEventType())
 					.uuid(alarm.getUuid())
 					.alarmTime(alarm.getAlarmTime())
+					.id(alarm.getId())
 					.build());
 		}
 
