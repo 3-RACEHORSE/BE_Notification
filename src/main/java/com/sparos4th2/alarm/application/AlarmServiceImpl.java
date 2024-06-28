@@ -80,6 +80,7 @@ public class AlarmServiceImpl implements AlarmService {
 		List<String> receiverUuids = alarmDto.getReceiverUuids();
 
 		receiverUuids.forEach(receiverUuid -> {
+			log.info("@@@@@@@@@@@@@@@@@@@@@ receiverUuid >>>>>>>> {}", receiverUuid);
 			Alarm alarm = Alarm.builder()
 				.receiverUuid(receiverUuid)
 				.message(alarmDto.getMessage())
@@ -93,22 +94,22 @@ public class AlarmServiceImpl implements AlarmService {
 
 			// 기존의 alarmCountRepository에 있는 지 확인한다.
 			// 있으면 count + 1, 없으면 count = 1 처리 후 alarm_count 도큐먼트 저장
-			Optional<AlarmCount> alarmCount = alarmCountRepository.findByReceiverUuid(receiverUuid);
-
-			if (alarmCount.isPresent()) {
-				AlarmCount newAlarmCount = AlarmCount.builder()
-					.receiverUuid(receiverUuid)
-					.alarmCount(alarmCount.get().getAlarmCount() + 1)
-					.build();
-				alarmCountRepository.save(newAlarmCount);
-			}
-			else {
-				AlarmCount newAlarmCount = AlarmCount.builder()
-					.receiverUuid(receiverUuid)
-					.alarmCount(1)
-					.build();
-				alarmCountRepository.save(newAlarmCount);
-			}
+//			Optional<AlarmCount> alarmCount = alarmCountRepository.findByReceiverUuid(receiverUuid);
+//
+//			if (alarmCount.isPresent()) {
+//				AlarmCount newAlarmCount = AlarmCount.builder()
+//					.receiverUuid(receiverUuid)
+//					.alarmCount(alarmCount.get().getAlarmCount() + 1)
+//					.build();
+//				alarmCountRepository.save(newAlarmCount);
+//			}
+//			else {
+//				AlarmCount newAlarmCount = AlarmCount.builder()
+//					.receiverUuid(receiverUuid)
+//					.alarmCount(1)
+//					.build();
+//				alarmCountRepository.save(newAlarmCount);
+//			}
 		});
 	}
 }
