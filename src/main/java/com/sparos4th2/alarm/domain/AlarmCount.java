@@ -7,6 +7,8 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Document(collection = "alarm_count")
 @NoArgsConstructor
@@ -17,10 +19,12 @@ public class AlarmCount {
 	private String id;
 	private String receiverUuid;
 	private int alarmCount;
+	private LocalDateTime alarmTime;
 
 	@Builder
 	public AlarmCount(String receiverUuid, int alarmCount) {
 		this.receiverUuid = receiverUuid;
 		this.alarmCount = alarmCount;
+		this.alarmTime = LocalDateTime.now();
 	}
 }
