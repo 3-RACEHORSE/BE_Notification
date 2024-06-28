@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AlarmCountRepository extends MongoRepository<AlarmCount, String> {
-    Optional<AlarmCount> findByReceiverUuid(String receiverUuid);
-
     List<AlarmCount> findAllByReceiverUuid(String uuid);
+
+    Optional<AlarmCount> findFirstByReceiverUuidOrderByAlarmTimeDesc(String receiverUuid);
 }
