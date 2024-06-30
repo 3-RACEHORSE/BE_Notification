@@ -13,6 +13,6 @@ public interface AlarmCountReactiveRepository extends ReactiveMongoRepository<Al
 
 	@Tailable
 	@Query("{ 'receiverUuid' : ?0 }")
-	Flux<StreamNotificationResponseVo> findByReceiverUuid(String receiverUuid);
+	Flux<AlarmCount> findByReceiverUuid(String receiverUuid);
 
 }
