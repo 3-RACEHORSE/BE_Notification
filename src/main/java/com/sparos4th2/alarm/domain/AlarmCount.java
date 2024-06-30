@@ -22,9 +22,9 @@ public class AlarmCount {
 	private LocalDateTime alarmTime;
 
 	@Builder
-	public AlarmCount(String receiverUuid, int alarmCount) {
+	public AlarmCount(String receiverUuid, int alarmCount, LocalDateTime alarmTime) {
 		this.receiverUuid = receiverUuid;
 		this.alarmCount = alarmCount;
-		this.alarmTime = LocalDateTime.now();
+		this.alarmTime = alarmTime;
 	}
 }

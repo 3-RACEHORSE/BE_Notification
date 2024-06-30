@@ -4,6 +4,7 @@ import com.sparos4th2.alarm.application.AlarmService;
 import com.sparos4th2.alarm.common.SuccessResponse;
 import com.sparos4th2.alarm.data.vo.NotificationResponseVo;
 import com.sparos4th2.alarm.data.vo.StreamNotificationResponseVo;
+import com.sparos4th2.alarm.domain.Alarm;
 import com.sparos4th2.alarm.domain.AlarmCount;
 import com.sparos4th2.alarm.infrastructure.AlarmCountReactiveRepository;
 import com.sparos4th2.alarm.infrastructure.AlarmCountRepository;
@@ -15,7 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,11 +54,26 @@ public class AlarmController {
 	@GetMapping(value = "/stream-notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	@Operation(summary = "미확인 알림 개수 SSE연결", description = "읽지않은 알림을 실시간으로 받습니다.")
 	public Flux<StreamNotificationResponseVo> streamNotifications(@RequestHeader String uuid) {
-		if(alarmCountRepository.findAllByReceiverUuid(uuid).isEmpty()) {
-			alarmCountRepository.save(AlarmCount.builder().alarmCount(0).receiverUuid(uuid).build());
-		}
-		return alarmCountReactiveRepository.findByReceiverUuid(uuid)
-				.subscribeOn(Schedulers.boundedElastic());
+		return alarmCountRepository.findFirstByReceiverUuidOrderByAlarmTimeDesc(uuid)
+				.map(Mono::just)
+				.orElseGet(() -> {
+					AlarmCount initialAlarmCount = AlarmCount.builder()
+							.alarmCount(0)
+							.receiverUuid(uuid)
+							.alarmTime(LocalDateTime.now())
+							.build();
+					alarmCountRepository.save(initialAlarmCount);
+					return Mono.just(initialAlarmCount);
+				})
+				.flatMapMany(initialAlarmCount ->
+						Flux.concat(
+								Mono.just(new StreamNotificationResponseVo(initialAlarmCount.getAlarmCount())),
+								alarmCountReactiveRepository.findByReceiverUuid(uuid)
+										.skip(Duration.ofSeconds(1))
+										.map(alarmCount -> new StreamNotificationResponseVo(alarmCount.getAlarmCount()))
+										.subscribeOn(Schedulers.boundedElastic())
+						)
+				);
 	}
 
 	// 알림 삭제
