@@ -49,6 +49,7 @@ public class AlarmServiceImpl implements AlarmService {
 		AlarmCount alarmCount = AlarmCount.builder()
 				.receiverUuid(receiverUuid)
 				.alarmCount(0)
+				.alarmTime(LocalDateTime.now())
 				.build();
 
 		alarmCountRepository.save(alarmCount);
