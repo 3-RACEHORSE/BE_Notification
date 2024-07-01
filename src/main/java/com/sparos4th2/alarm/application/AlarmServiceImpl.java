@@ -101,6 +101,7 @@ public class AlarmServiceImpl implements AlarmService {
 				AlarmCount newAlarmCount = AlarmCount.builder()
 					.receiverUuid(receiverUuid)
 					.alarmCount(alarmCount.get().getAlarmCount() + 1)
+					.alarmTime(LocalDateTime.now())
 					.build();
 				alarmCountRepository.save(newAlarmCount);
 			}
@@ -108,6 +109,7 @@ public class AlarmServiceImpl implements AlarmService {
 				AlarmCount newAlarmCount = AlarmCount.builder()
 					.receiverUuid(receiverUuid)
 					.alarmCount(1)
+					.alarmTime(LocalDateTime.now())
 					.build();
 				alarmCountRepository.save(newAlarmCount);
 			}
